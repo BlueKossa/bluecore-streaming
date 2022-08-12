@@ -1,0 +1,26 @@
+[package]
+name = "youtube_dl"
+version = "0.6.3"
+authors = ["Martin Tomasi <martin.tomasi@gmail.com>"]
+edition = "2018"
+description = "Runs youtube-dl and parses its JSON output."
+license = "MIT/Apache-2.0"
+repository = "https://github.com/GyrosOfWar/youtube-dl-rs"
+homepage = "https://github.com/GyrosOfWar/youtube-dl-rs"
+categories = ["multimedia::video"]
+keywords = ["youtube-dl", "youtube"]
+
+[features]
+default = ["youtube-dl"]
+youtube-dl = []
+yt-dlp = []
+
+[dependencies]
+serde = { version = "1.0.124", features = ["derive"] }
+serde_json = "1.0.64"
+log = "0.4.14"
+wait-timeout = "0.2.0"
+
+[dev-dependencies.tokio]
+version = "1"
+features = ["rt", "rt-multi-thread"]

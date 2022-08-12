@@ -2,6 +2,10 @@
   text-align: center;
 }
 
+.Hidden {
+  display: none;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -36,3 +40,46 @@
     transform: rotate(360deg);
   }
 }
+
+input[type=range].seeker {
+  height: 2.2em;
+  -webkit-appearance: none;
+}
+
+/*progress support*/
+input[type=range].seeker.slider-progress {
+  --range: calc(var(--max) - var(--min));
+  --ratio: calc((var(--value) - var(--min)) / var(--range));
+  --sx: calc(0.5 * 2em + var(--ratio) * (100% - 2em));
+}
+
+input[type=range].seeker:focus {
+  outline: none;
+}
+
+/*webkit*/
+input[type=range].seeker::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 100%;
+  background: #F80000;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: calc(max((1em - 1px - 1px) * 0.5,0px) - 1.5em * 0.5);
+}
+
+input[type=range].seeker::-webkit-slider-runnable-track {
+  height: 1em;
+  border: 1px solid #b2b2b2;
+  border-radius: 0.5em;
+  background: #efefef;
+  box-shadow: none;
+}
+
+input[type=range].seeker.slider-progress::-webkit-slider-runnable-track {
+  background: linear-gradient(#FF0000,#FF0000) 0/var(--sx) 100% no-repeat, #efefef;
+}
+
+nav ul{height:200px; width:18%;}
+nav ul{overflow:hidden; overflow-y:scroll;}
