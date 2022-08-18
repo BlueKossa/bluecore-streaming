@@ -12,6 +12,17 @@
   },
   "tauri": {
     "allowlist": {
+      "fs": {
+        "scope": [
+          "$APP/*"
+        ],
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "copyFile": true,
+        "createDir": true,
+        "removeFile": true
+      },
       "all": true
     },
     "bundle": {

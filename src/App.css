@@ -1,5 +1,72 @@
+:root {
+  --dg: #121212;
+
+}
+
+body {
+  background-color: var(--dg);
+}
+
 .App {
   text-align: center;
+}
+
+.main {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+input:focus {
+  outline: none;
+}
+
+button:focus {
+  outline: none;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100px;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer > .r {
+  position: absolute;
+  right: 0;
+}
+
+.left_side {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: calc(100% - 100px);
+  background-color: #ff7b7b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  overflow:hidden;
+}
+
+.playlist {
+  position: absolute;
+  width: 100%;
+  height: 20%;
+  bottom: 0;
+  left: 0;
+  margin-left: 0;
+  overflow: hidden;
+  overflow-y: auto;
+  text-align: left;
+  list-style-type: none;
 }
 
 .Hidden {
@@ -42,43 +109,48 @@
 }
 
 input[type=range].seeker {
+  width: 30%;
   height: 2.2em;
   -webkit-appearance: none;
+  background: transparent;
 }
+
 
 /*progress support*/
 input[type=range].seeker.slider-progress {
   --range: calc(var(--max) - var(--min));
   --ratio: calc((var(--value) - var(--min)) / var(--range));
-  --sx: calc(0.5 * 2em + var(--ratio) * (100% - 2em));
-}
-
-input[type=range].seeker:focus {
-  outline: none;
+  --sx: calc(0.5 * 0.5em + var(--ratio) * (100% - 0.5em));
 }
 
 /*webkit*/
 input[type=range].seeker::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 1.5em;
-  height: 1.5em;
+  width: 0.5em;
+  height: 0.5em;
   border-radius: 100%;
-  background: #F80000;
-  border: none;
-  box-shadow: 0 0 2px black;
-  margin-top: calc(max((1em - 1px - 1px) * 0.5,0px) - 1.5em * 0.5);
+  background: #373737;
+  margin-top: calc(max((0.5em) * 0.5) - 0.5em * 0.5);
+}
+
+input[type=range].seeker:hover::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1em;
+  height: 1em;
+  border-radius: 100%;
+  background: #373737;
+  margin-top: calc(max((0.5em) * 0.5) - 1em * 0.5);
 }
 
 input[type=range].seeker::-webkit-slider-runnable-track {
-  height: 1em;
-  border: 1px solid #b2b2b2;
+  height: 0.5em;
   border-radius: 0.5em;
-  background: #efefef;
+  background: #1d1d1d;
   box-shadow: none;
 }
 
 input[type=range].seeker.slider-progress::-webkit-slider-runnable-track {
-  background: linear-gradient(#FF0000,#FF0000) 0/var(--sx) 100% no-repeat, #efefef;
+  background: linear-gradient(#373737, #373737) 0/var(--sx) 100% no-repeat, #1d1d1d;
 }
 
 nav ul{height:200px; width:18%;}

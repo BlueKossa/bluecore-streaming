@@ -32,7 +32,11 @@ fn main() {
           height: 600.0,
         }))
         .unwrap();
-      main_window.set_resizable(false).unwrap();
+      main_window.set_min_size(Size::Logical(LogicalSize {
+        width: 800.0,
+        height: 600.0,
+      }).into())
+      .unwrap();
       Ok(())
     })
     .invoke_handler(tauri::generate_handler![test_command, my_custom_command, get_playlist, get_stream, shuffle])
@@ -53,35 +57,9 @@ fn test_command() -> Vec<i32> {
 }
 
 #[tauri::command]
-async fn get_playlist(playlist_url: String) -> Vec<Video> {
+async fn get_playlist(playlist_url: String, name: String, dir: String) -> Vec<Video> {
   if playlist_url.starts_with("https://www.youtube.com/playlist?list=") {
     let mut playlist_list: Vec<Video> = Vec::new();
-/*     let child = Command::new("youtube-dl")
-      .arg("--flat-playlist")
-      .arg("-e")
-      .arg("--get-id")
-      .arg(playlist_url)
-      .creation_flags(CREATE_NO_WINDOW)
-      .output()
-      .unwrap();
-    let playlist_string = String::from_utf8_lossy(&child.stdout).to_string();
-    let mut counter = 0;
-    let mut song_info = (String::new(), String::new());
-    for result in playlist_string.lines() {
-      if counter % 2 == 0 {
-        song_info.0 = result.to_string();
-      } else {
-        song_info.1 = result.to_string();
-        playlist_list.push( {
-          Song {
-            title: song_info.0.clone(),
-            url: song_info.1.clone(),
-          }
-        });
-      }
-      counter += 1;
-    }
-    playlist_list */
     println!("Hello1");
     let output = YoutubeDl::new(playlist_url)
       .flat_playlist(true)
@@ -95,12 +73,12 @@ async fn get_playlist(playlist_url: String) -> Vec<Video> {
     println!("Hello2");
     for video in playlist_info.entries.clone().unwrap().iter() {
       println!("Hello3");
+      println!("{:?}", video.uploader.clone());
       let video_info = Video {
         url: video.id.clone(),
         title: video.title.clone(),
         author: video.uploader.clone().unwrap(),
       };
-      println!("{}", video_info.author);
       playlist_list.push(video_info);
     }
     playlist_list
@@ -111,14 +89,6 @@ async fn get_playlist(playlist_url: String) -> Vec<Video> {
 
 #[tauri::command]
 async fn get_stream(id: String) -> String {
-/*   let url = Url::parse(&*format!("https://www.youtube.com/watch?v={}", id)).unwrap();
-  let video: Video = VideoFetcher::from_url(&url).unwrap()
-    .fetch()
-    .await.unwrap()
-    .descramble().unwrap();
-  let audio = video.best_audio().unwrap().signature_cipher.url.clone();
-  println!("Audio: {}", audio);
-  audio.to_string() */
   let child = Command::new("yt-dlp")
     .arg("-g")
     .arg("-f")

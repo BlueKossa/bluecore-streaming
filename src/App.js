@@ -1,9 +1,18 @@
-import logo from './logo.svg';
-import './App.css';
-import React, { useState } from 'react';
-import { app, fs, invoke} from "@tauri-apps/api"
+import logo from "./logo.svg";
+import "./App.css";
+import React, { useEffect, useState } from "react";
+import { app, invoke } from "@tauri-apps/api";
+import { readDir, BaseDirectory, createDir } from '@tauri-apps/api/fs';
+import { appDir } from "@tauri-apps/api/path";
+window.$ = window.jQuery = require('jquery');
 
-document.addEventListener('contextmenu', event => event.preventDefault());
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+window.$(document).keyup(function(event) {
+  if(event.which === 32) {
+  	event.preventDefault();
+		console.log("Space pressed.");
+  }
+});
 
 var playlist = [];
 var shuffler = [];
@@ -11,17 +20,68 @@ var playing = true;
 var currPlaying = 0;
 var shuffling = false;
 
+const PlayingList = () => {
+  document.getElementById("playlist").innerHTML = "";
+  console.log("hello");
+  if (playlist.length != 0) { 
+    const fragment = document.createDocumentFragment();
+    console.log(playlist); 
+    for (let i = 1; i < 51 && i < playlist.length + 1; i++) {
+      var place;
+      var placeIndex = i + currPlaying;
+      if (placeIndex >= playlist.length) {
+        placeIndex -= playlist.length;
+      }
+      if (shuffling) {
+        place = shuffler[placeIndex];
+      } else {
+        place = placeIndex;
+      }
+      console.log(i);
+      const li = fragment
+        .appendChild(document.createElement('li'));
+      li.textContent = playlist[place].title;
+    }
+    document.getElementById("playlist").appendChild(fragment);
+  }
+}
+
 function App() {
-  
-  //const [stream, set] = useState("https://rr3---sn-c5ioiv45c-5gol.googlevideo.com/videoplayback?expire=1660108725&ei=VevyYtfkMOmQv_IPj8WY0AM&ip=176.10.137.76&id=o-ANZkb6t3CMnvFE5ZxktG770uHpYOt7aI7npRkwpbxlKA&itag=140&source=youtube&requiressl=yes&mh=uZ&mm=31%2C26&mn=sn-c5ioiv45c-5gol%2Csn-i5heen7z&ms=au%2Conr&mv=m&mvi=3&pcm2cms=yes&pl=24&initcwndbps=2176250&spc=lT-KhiaJG26y9w_zcOB-dhA9iQbI7Is&vprv=1&mime=audio%2Fmp4&ns=yA-YY9NX3BcCJAVjAIxkN8IH&gir=yes&clen=249509&dur=15.371&lmt=1658696556250023&mt=1660086786&fvip=5&keepalive=yes&fexp=24001373%2C24007246&c=WEB&rbqsm=fr&txp=5432434&n=0QwxG-N9j8nKR3gy&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cspc%2Cvprv%2Cmime%2Cns%2Cgir%2Cclen%2Cdur%2Clmt&sig=AOq0QJ8wRgIhAOI4R4rYEkUGFmUVKEiPQQGXJyrKCjGoQLNW7IoT9sFTAiEA_VSv0tFeMq3P9ejfN3XZ5gUOigxZF4i8LPYw6LYbhpk%3D&lsparams=mh%2Cmm%2Cmn%2Cms%2Cmv%2Cmvi%2Cpcm2cms%2Cpl%2Cinitcwndbps&lsig=AG3C_xAwRgIhAIHxp8QAYk3kEz80pOO6US-mEhYGkoCNOuqbyAfrzc4SAiEAmZJKaajHs5FsOxRcSV-h_-_9-B2Hi_22GBZogvpF7bU%3D");
   const [stream, set] = useState("");
   const [currTime, setTime] = useState("dawdaw");
-  var player = document.getElementById("player");
-  var volumeControl = document.getElementById("volume-control");
-  var seekControl = document.getElementById("seek-control")
+  const [volumeState, setVolumeState] = useState("high");
+  var player;
+  var volumeControl;
+  var seekControl;
+  async function poop() {
+    console.log(await appDir());
+    //await createDir('music', { dir: BaseDirectory.App })
+    const files = await readDir('music', { dir: BaseDirectory.App, recursive: true });
+    console.log(files);
+  }
+  poop();
+
+  useEffect(() => {
+    player = document.getElementById("player");
+    volumeControl = document.getElementById("volume-control");
+    seekControl = document.getElementById("seek-control");
+
+    for (let e of document.querySelectorAll(
+      'input[type="range"].slider-progress'
+    )) {
+      e.style.setProperty("--value", e.value);
+      e.style.setProperty("--min", e.min == "" ? "0" : e.min);
+      e.style.setProperty("--max", e.max == "" ? "100" : e.max);
+      e.addEventListener("input", () => e.style.setProperty("--value", e.value));
+    }
+    PlayingList();
+  });
 
   function playTime() {
-    seekControl.style.setProperty('--value', (player.currentTime / player.duration) * 100);
+    seekControl.style.setProperty(
+      "--value",
+      (player.currentTime / player.duration) * 100
+    );
     seekControl.value = (player.currentTime / player.duration) * 100;
   }
 
@@ -36,7 +96,6 @@ function App() {
     playNew();
   }
 
-
   function playNew() {
     currPlaying += 1;
     if (currPlaying + 1 > playlist.length) {
@@ -50,11 +109,13 @@ function App() {
     } else {
       place = currPlaying;
     }
-    invoke('get_stream', { id: playlist[place].url }).then((message) => {if(message != "") {
-      set(message);
-    } else {
-      skip();
-    }});
+    invoke("get_stream", { id: playlist[place].url }).then((message) => {
+      if (message != "") {
+        set(message);
+      } else {
+        skip();
+      }
+    });
   }
 
   function queue() {
@@ -66,11 +127,13 @@ function App() {
     } else {
       place = currPlaying;
     }
-    invoke('get_stream', { id: playlist[place].url }).then((message) => {if(message != "") {
-      set(message);
-    } else {
-      skip();
-    }});
+    invoke("get_stream", { id: playlist[place].url }).then((message) => {
+      if (message != "") {
+        set(message);
+      } else {
+        skip();
+      }
+    });
   }
 
   function play() {
@@ -84,22 +147,35 @@ function App() {
   }
 
   function test() {
-    invoke('get_stream', { id: 'I27MFgmgQY0' }).then((message) => console.log(message));
+    invoke("get_stream", { id: "I27MFgmgQY0" }).then((message) =>
+      console.log(message)
+    );
   }
 
   function shuffle() {
     if (playlist != []) {
-      invoke('shuffle', { count: playlist.length }).then((message) => shuffler = message);
+      invoke("shuffle", { count: playlist.length }).then(
+        (message) => (shuffler = message)
+      );
       shuffling = !shuffling;
+      PlayingList();
     }
   }
 
   async function getPlaylist() {
     const url = document.getElementById("playlistInput").value;
-    console.log(url);
-    await invoke('get_playlist', { playlistUrl: url }).then((message) => playlist = message).then(console.log("done"));
-    document.getElementById("playlistInput").value = "";
-    console.log(playlist);
+    const name = document.getElementById("playlistNameInput").value;
+    if (url != "" && name != "") {
+      console.log(url);
+      await invoke("get_playlist", { playlistUrl: url, name: name, dir: await appDir() })
+        .then((message) => (playlist = message));
+      document.getElementById("playlistInput").value = "";
+      document.getElementById("playlistNameInput").value = "";
+      PlayingList();
+      console.log(playlist);
+    } else {
+
+    }
   }
 
   function volumeController() {
@@ -112,38 +188,65 @@ function App() {
   function seek() {
     var value = seekControl.value;
     try {
-      player.currentTime = player.duration * (value/100);
+      player.currentTime = player.duration * (value / 100);
     } catch {
       seekControl.value = 0;
+      seekControl.style.setProperty("--value", 0);
     }
   }
 
-  for (let e of document.querySelectorAll('input[type="range"].slider-progress')) {
-    e.style.setProperty('--value', e.value);
-    e.style.setProperty('--min', e.min == '' ? '0' : e.min);
-    e.style.setProperty('--max', e.max == '' ? '100' : e.max);
-    e.addEventListener('input', () => e.style.setProperty('--value', e.value));
-  }
-  
-
   return (
-    <div className="App">
-      <h1>Hello!</h1>
-      <div className="Hidden">
-        <audio onTimeUpdate={playTime} controls autoPlay onError={playNew} onEnded={playNew} src={stream} id="player"></audio>
+    <div class="App">
+      <div class="main">
+        <div class="Hidden">
+          <audio
+            onTimeUpdate={() => playTime()}
+            controls
+            autoPlay
+            onError={() => playNew()}
+            onEnded={() => playNew()}
+            src={stream}
+            id="player"
+          ></audio>
+        </div>
+        <button onClick={() => play()}>Play/Pause</button>
+        <button onClick={() => queue()}>Queue</button>
+        <button onClick={() => getPlaylist()}>Load Playlist</button>
+        <input id="playlistInput" placeholder="Input url to playlist"></input>
+        <input id="playlistNameInput" placeholder="Input name of playlist"></input>
+        <div>{currTime}</div>
+        <button onClick={() => skip()}>Skip</button>
+        <button onClick={() => back()}>Back</button>
+        <button onClick={() => shuffle()}>Shuffle</button>
+        <div class="footer" id="footer">
+          <input
+            class="seeker slider-progress"
+            min="0"
+            max="100"
+            defaultValue="0"
+            step="1"
+            type="range"
+            onChange={() => seek()}
+            id="seek-control"
+          ></input>
+          <div class="r">
+            <input
+            class="seeker"
+            min="0"
+            max="100"
+            step="1"
+            type="range"
+            onChange={() => volumeController()}
+            id="volume-control"
+          ></input>
+          </div>
+        </div>
+        <div class="left_side" id="sidebar1">
+          <ul id="playlist" class="playlist">
+
+          </ul>
+        </div>
       </div>
-      <button onClick={play}>Play/Pause</button>
-      <button onClick={queue}>Queue</button>
-      <input class="seeker" min="0" max="100" step="1" type="range" onChange={volumeController} id="volume-control"></input>   
-      <input class="seeker slider-progress" min="0" max="100" defaultValue="0" step="1" type="range" onChange={seek} id="seek-control"></input>   
-      <input class="seeker slider-progress" type="range"></input>
-      <button onClick={getPlaylist}>Load Playlist</button>
-      <input id="playlistInput"></input>
-      <div>{currTime}</div>
-      <button onClick={skip}>Skip</button>
-      <button onClick={back}>Back</button>
-      <button onClick={shuffle}>Shuffle</button>
-      <script></script>
     </div>
   );
 }
